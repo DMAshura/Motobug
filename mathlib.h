@@ -23,6 +23,13 @@ enum Modes {
 	MODE_RIGHT = 270
 };
 
+enum Directions {
+	DIR_RIGHT = 0,
+	DIR_DOWN = 90,
+	DIR_LEFT = 180,
+	DIR_UP = 270
+};
+
 // Useful mathematical functions
 
 int sign(double x);
@@ -38,8 +45,6 @@ typedef struct point{
 
 // Vector class
 
-class Vector;
-
 class Vector {
 public:
 	double x1, y1; // Starting position of vector
@@ -53,18 +58,25 @@ public:
 	Vector();
 	Vector(double x1, double y1, double x2, double y2);
 	Vector(double x1, double y1, double x2, double y2, int type);
-	double getAngle(); // 0 is straight forward, 90 is down, etc
-	double getInwardNormal(); // Gives vector pointing inside a platform.
-	int getType();
-	double getLength();
-	double getLengthX();
-	double getLengthY();
-	void setType(int type);
-	void setVector(double x1, double y1, double x2, double y2);
+	Vector(Point p1, Point p2);
+	Vector(Point p1, Point p2, int type);
+	Vector(Point p1, double length, double angle);
+	Vector(Point p1, double length, double angle, int type);
+	void set_anchor(Point p);
+	double get_angle(); // 0 is straight forward, 90 is down, etc
+	void set_angle(double angle);
+	double get_inward_normal(); // Gives vector pointing inside a platform.
+	int get_type();
+	double get_length();
+	void set_length(double length);
+	double get_length_x();
+	double get_length_y();
+	void set_type(int type);
+	void set_vector(double x1, double y1, double x2, double y2);
 	bool intersects(Vector other);
-	Point getIntersectionPoint(Vector other);
-	double getIntersectionTValue(Vector other); // Gives value between 0 and 1 if there is a collision
-	                                            // and -1 if there is no collision
+	Point get_intersection_point(Vector other);
+	double get_intersection_t_value(Vector other); // Gives value between 0 and 1 if there is a collision
+	                                               // and -1 if there is no collision
 };
 
 #endif
