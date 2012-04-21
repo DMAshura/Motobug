@@ -5,24 +5,24 @@
 #include "mathlib.h"
 
 enum CornerType { 
-	CORNER_UPLEFT,
-	CORNER_DOWNLEFT,
-	CORNER_UPRIGHT,
-	CORNER_DOWNRIGHT
+	CORNER_TOPLEFT = 0,
+	CORNER_TOPRIGHT = 1,
+	CORNER_BOTTOMRIGHT = 2,
+	CORNER_BOTTOMLEFT = 3
 };
 
 class Terrain {
 	public:
-		Terrain(int X, int Y, unsigned int W, unsigned int H);
-		Terrain(point o, unsigned int W, unsigned int H);
+		Terrain(int x, int y, unsigned int width, unsigned int height);
+		//Terrain(Point p, unsigned int width, unsigned int height);
 		virtual ~Terrain();
 		
 		//Misc Functions
 		virtual bool blit();
 		
 		//Geometry management functions
-		Vector* add_vector(point v1, point v2);
-		Vector* add_vector(point v1, point v2, int type);
+		Vector* add_vector(Point p1, Point p2);
+		Vector* add_vector(Point p1, Point p2, int type);
 		Vector* add_vector(unsigned, unsigned, unsigned, unsigned);
 		Vector* add_vector(unsigned, unsigned, unsigned, unsigned, int);
 		
@@ -33,49 +33,30 @@ class Terrain {
 		//virtual void del_vertex(unsigned int index);
 		//virtual void mov_vertex(unsigned int index, unsigned int nx, unsigned int ny);
 
-		virtual void resize(unsigned int nw, unsigned int nh);
-		virtual void move(point n_o);
+		virtual void resize(unsigned int new_width, unsigned int new_height);
+		virtual void move(point new_p);
+		void reset_corner_array();
 	
 		//std::vector<point> vertices;
-		std::vector<Vector> vectors;
+		static std::vector<Vector> vector_list;
 		
 	protected:
-		point origin;
-		unsigned int w, h;
+		Point origin;
+		unsigned int width, height;
+		Point corner_array[4];
 };
 
 class Rectangle: protected Terrain {
 	public:
-		Rectangle(int x, int y, unsigned int w, unsigned int h) :
-		Terrain(x,y,w,h) {
-		add_vector(x,y,x+w,y);
-		add_vector(x+w,y,x+w,y+h);
-		add_vector(x+w,y+h,x,y+h);
-		add_vector(x,y+h,x,y);
-		}
-		
-		Rectangle(point o, unsigned int w, unsigned int h) :
-		Terrain(o,w,h) {
-		add_vector(x,y,x+w,y);
-		add_vector(x+w,y,x+w,y+h);
-		add_vector(x+w,y+h,x,y+h);
-		add_vector(x,y+h,x,y);
-		};
-		
+		Rectangle(int x, int y, unsigned int width, unsigned int height);
+		Rectangle(Point p, unsigned int width, unsigned int height);
 		virtual ~Rectangle();
 };
 
 class Triangle: protected Terrain {
 	public:		
-		Triangle(int X, int Y, unsigned int W, unsigned int H, CornerType tritype) :
-		Terrain(X,Y,W,H) {
-		//code
-		}
-		Triangle(point o, unsigned int w, unsigned int h, CornerType tritype) :
-		Terrain(o,w,h) {
-		//code
-		}
-		
+		Triangle(int x, int y, unsigned int width, unsigned int height, CornerType type);
+		Triangle(Point p, unsigned int width, unsigned int height, CornerType type)
 		virtual ~Triangle();
 	private:
 		CornerType type;
