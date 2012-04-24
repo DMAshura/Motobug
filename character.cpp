@@ -129,6 +129,11 @@ Character::Character() {
 	
 	max_slide_angle = 30;
 	max_switch_angle = 45;
+	unroll_speed = 0.5;
+	
+	spindash_power = 0;
+	spindash_power_inc = 2;
+	spindash_power_max = 8;
 	
 	mode_angle = MODE_DOWN;
 	gravity_angle = MODE_DOWN;
@@ -160,6 +165,14 @@ Character::Character() {
 	for(int i = 0; i < input_queue_length; i++) {
 		input_queue.push_back(0);
 	}
+	
+	BUTTON_JUMP = BUTTON_A + BUTTON_B + BUTTON_C;
+	
+	flag_underwater = false;
+	flag_grounded = true;
+	facing_direction = FACING_RIGHT;
+	
+	horizontal_lock = Timer(30);
 }
 
 Character::~Character() {
@@ -200,13 +213,30 @@ void Character::loop() {
 }
 
 void Character::calculate_movement() {
-	// Try to roll
-	if (pressed_button(BUTTON_DOWN)) {
-		roll();
+	if(pressed_button(BUTTON_DOWN)) {
+		if(state == STATE_STANDING) {
+			state = STATE_CROUCHING;
+		} else if(flag_grounded && state != STATE_ROLLING && abs(speed_ground) >= rol) {
+		state = STATE_ROLLING;
+		}
 	}
 	
+	if(released_button(BUTTON_DOWN) && state == STATE_CROUCHING) {
+		state = STATE_STANDING;
+	}
+	
+	if(pressed_button(BUTTON_UP) && state == STATE_STANDING) {
+		state = STATE_LOOKINGUP;
+	}
+	
+	if(released_button(BUTTON_UP) && state == STATE_LOOKINGUP) {
+		state = STATE_STANDING;
+	}
+	
+	
+	
 	// Use correct constants
-		update_constants();
+	update_constants();
 	
 	// If character is no longer on the ground, convert his momentum to the default gravity at the time.
 	// If not, make him hug the ground.
@@ -248,14 +278,31 @@ void Character::calculate_movement() {
 		}
 	}
 
+	// Which way is the character facing?
+	if(speed_ground > 0) { facing_direction = FACING_RIGHT;
+	} else if(speed_ground < 0) { facing_direction = FACING_LEFT; }
+	
+	
 	// Friction
 	if(state == STATE_ROLLING || (!holding_button(BUTTON_LEFT) && !holding_button(BUTTON_RIGHT))) {
 		speed_ground -= min(abs(speed_ground), friction) * sign(speed_ground);
 	}
 
 	// Unroll
-	if(state == STATE_ROLLING && speed_ground == 0) {
+	if(state == STATE_ROLLING && flag_grounded &&
+		(abs(speed_ground) < unroll_speed || abs(speed_ground) == 0)) {
 		state = holding_button(BUTTON_DOWN) ? STATE_CROUCHING : STATE_STANDING;
+	}
+	
+	// Spin Dash
+	if((state == STATE_CROUCHING || state == STATE_SPINDASHING) && pressed_button(BUTTON_JUMP)) {
+		state = STATE_SPINDASHING;
+		spindash_power = min(spindash_power + spindash_inc, spindash_max);
+		if(abs(spindash_power) >= 0.125) spindash_power *= drg;
+	}
+	if(state == STATE_SPINDASHING && released_button(BUTTON_DOWN)) {
+		state = STATE_ROLLING;
+		ground_speed = facing_direction * (8 + floor(spindash_power)/2.0);
 	}
 
 

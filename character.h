@@ -4,16 +4,20 @@
 #include <vector>
 
 #include "mathlib.h"
+#include "timer.h"
 
 enum CharacterStates {
 	STATE_STANDING,
 	STATE_WAITING,
+	STATE_STILLWAITING,
 	STATE_WALKING,
 	STATE_RUNNING,
+	STATE_BRAKING,
 	STATE_LOOKINGUP,
 	STATE_CROUCHING,
 	STATE_ROLLING,
 	STATE_SPINDASHING,
+	STATE_PEELINGOUT,
 	STATE_JUMPING,
 	STATE_FALLING,
 	STATE_HURT,
@@ -29,6 +33,11 @@ enum InputButtons {
 	BUTTON_B     = 1 << 5,
 	BUTTON_C     = 1 << 6,
 	BUTTON_START = 1 << 7
+};
+
+enum FacingDirection {
+	FACING_LEFT = -1,
+	FACING_RIGHT = 1
 };
 
 class Sensor{
@@ -78,6 +87,7 @@ public:
 	double speed_ground;		// Speed parallel to ground
 	double speed_air;			// Speed perpendicular to ground
 	double angle;				// Angle of momentum
+	int facing_direction;		// 1 for right, -1 for left
 	
 	double accel;				// Current Acceleration
 	double decel;				// Current Deceleration
@@ -92,6 +102,11 @@ public:
 	
 	double max_slide_angle;		// Maximum angle at which a character must slide down a slope
 	double min_switch_angle;	// Minimum angle at which character switches modes
+	double unroll_speed;		// Speed at which Sonic unrolls
+	
+	int spindash_power;			// Current power of spindash
+	int spindash_power_inc;		// Spindash power increment
+	int spindash_power_max;		// Maximum possible spindash power
 	
 	int state;					// Current state of character.
 	
@@ -153,6 +168,12 @@ public:
 	// Actions
 	bool roll();
 	bool jump();
+	bool spindash();
+	
+	int BUTTON_JUMP;
+	int BUTTON_ACTION;
+	
+	Timer horizontal_lock;
 	
 public:
 	// Sensors
@@ -164,6 +185,9 @@ public:
 	int sensor_ground_length, sensor_ground_spacing;
 	int sensor_ceiling_length, sensor_ceiling_spacing;
 	int sensor_wall_length;
+	
+	// Timers
+	Timer horizontal_control_lock;
 };
 
 #endif
